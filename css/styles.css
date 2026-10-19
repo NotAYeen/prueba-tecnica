@@ -1,0 +1,301 @@
+/*
+ * Mercado Gastronomico Azteca: estilos propios.
+ *
+ * Tailwind cubre la composicion; aqui vive lo que Tailwind no expresa bien:
+ * el motivo de identidad (filete y sello), el movimiento y el foco visible.
+ * Ver DESIGN.md para el porque de cada decision.
+ */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background-color: #f7f1e7;
+  color: #1a1512;
+  /* Un filete de papel, no una textura. Suaviza el blanco de las imagenes contra el fondo. */
+  background-image: linear-gradient(180deg, #fbf6ee 0%, #f7f1e7 22rem);
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* Motivo de identidad: filete de guajillo, como el corte de un pliego impreso. */
+.filete {
+  height: 3px;
+  background-color: #c1121f;
+}
+
+/* Sello de precio: la etiqueta que el mercado pone a mano sobre cada platillo. */
+.sello {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  border: 2px solid #c1121f;
+  border-radius: 2px;
+  padding: 0.15rem 0.5rem;
+  color: #c1121f;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Etiqueta de seccion. Tracking moderado, nunca extremo (R-06). */
+.etiqueta {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contenedor {
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 768px) {
+  .contenedor {
+    padding-inline: 2.5rem;
+  }
+}
+
+/* ---------- Movimiento (MOTION 2) ---------- */
+
+/* Una sola curva para todo el movimiento de la pagina. */
+html {
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --toque: 0.22s;
+}
+
+/* Entrada al hacer scroll. Se aplica una vez y luego se quita: nada de loops. */
+.revelar {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.revelar.visible {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.55s var(--ease),
+    transform 0.55s var(--ease);
+}
+
+/* Cambio de sede: crossfade del panel completo. */
+.panel-entrando {
+  animation: panelEntra 0.38s var(--ease) both;
+}
+@keyframes panelEntra {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Stagger de las tarjetas del dia. El indice va en --i.
+   El JS quita la clase al terminar la animacion (ver app.js): mientras siga puesta,
+   el relleno "both" gana en la cascada al transform del :hover y la tarjeta no se levanta. */
+.tarjeta-entrando {
+  animation: tarjetaEntra 0.42s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@keyframes tarjetaEntra {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Los bloques que ya estan en pantalla al abrir no pueden esperar al scroll,
+   asi que se reproduce la misma entrada al montar. El orden va en --i. */
+.entrada {
+  animation: entradaSube 0.6s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes entradaSube {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Barra de scroll: el borde inferior del header se llena con lo que llevas leido.
+   Es la unica pieza que reacciona a la pagina entera, asi que es la que mas
+   necesita actualizarse en cada frame. */
+#avance-scroll {
+  transform: scaleX(0);
+  transform-origin: left;
+  will-change: transform;
+}
+
+/* Header compacto al hacer scroll: en movil un header alto se come la pantalla. */
+#cabecera {
+  transition: padding-block 0.2s ease;
+}
+#cabecera.compacta {
+  padding-block: 0.4rem;
+}
+#cabecera.compacta #marca-sub {
+  display: none;
+}
+
+/* ---------- Hover ---------- */
+
+/* Los hovers se declaran una vez y se encienden dentro de @media (hover: hover).
+   En tactil el :hover se queda pegado despues de tocar, asi que fuera de ahi
+   solo hay cambios de estado (activo, foco), que si son reales. */
+@media (hover: hover) and (pointer: fine) {
+  /* Tarjeta de promocion: se levanta y la foto se acerca un poco. */
+  .tarjeta {
+    transition:
+      transform var(--toque) ease,
+      box-shadow var(--toque) ease,
+      border-color var(--toque) ease;
+  }
+  .tarjeta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px -16px rgba(26, 21, 18, 0.45);
+  }
+  .tarjeta:hover .foto {
+    transform: scale(1.04);
+  }
+  /* El sello de precio se tensa al pasar el cursor: es el dato que se busca. */
+  .tarjeta:hover .sello {
+    background-color: #c1121f;
+    color: #fffdf9;
+    transition:
+      background-color var(--toque) ease,
+      color var(--toque) ease;
+  }
+
+  /* Botones */
+  .sede-tab,
+  .dia-tab,
+  .pie-sede,
+  .btn-informe {
+    transition:
+      transform var(--toque) ease,
+      box-shadow var(--toque) ease,
+      background-color var(--toque) ease,
+      border-color var(--toque) ease,
+      color var(--toque) ease;
+  }
+  .sede-tab:hover:not([aria-selected='true']),
+  .dia-tab:hover:not([aria-selected='true']),
+  .pie-sede:hover,
+  .btn-informe:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -14px rgba(26, 21, 18, 0.55);
+  }
+  .sede-tab:hover:not([aria-selected='true']),
+  .dia-tab:hover:not([aria-selected='true']) {
+    border-color: #1a1512;
+    color: #1a1512;
+  }
+  .btn-informe:hover {
+    background-color: #fffdf9;
+    border-color: #fffdf9;
+  }
+
+  /* Enlaces de navegacion: el subrayado crece desde el centro. */
+  .nav-enlace {
+    position: relative;
+  }
+  .nav-enlace::after {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 0.6rem;
+    height: 2px;
+    background-color: #c1121f;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.25s var(--ease);
+  }
+  .nav-enlace:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Entradas de la lista de postres: la foto responde al cursor. */
+  .postre-foto {
+    transition: transform 0.4s var(--ease);
+  }
+  .postre:hover .postre-foto {
+    transform: scale(1.08) rotate(-1.5deg);
+  }
+
+  /* Pie de pagina: la foto y la fecha responden al cursor. */
+  .septiembre-item:hover .foto,
+  .evento:hover .foto {
+    transform: scale(1.04);
+  }
+  .evento:hover .evento-fecha {
+    color: #c1121f;
+  }
+}
+
+/* Fuera de @media hover, el estado activo (pulsado) si se muestra: es real. */
+.sede-tab:active,
+.dia-tab:active,
+.pie-sede:active,
+.btn-informe:active,
+.nav-enlace:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.foto {
+  transition: transform 0.45s var(--ease);
+}
+
+/* ---------- Foco visible (R-32) ---------- */
+:where(a, button):focus-visible {
+  outline: 3px solid #c1121f;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+/* Sobre fondo oscuro el anillo se dibuja en claro: el guajillo no se distingue
+   lo suficiente del agave ni del ink. */
+.sobre-agave :where(a, button):focus-visible {
+  outline-color: #fffdf9;
+}
+
+.riel-dias::-webkit-scrollbar {
+  display: none;
+}
+.riel-dias {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .revelar {
+    opacity: 1;
+    transform: none;
+  }
+}
